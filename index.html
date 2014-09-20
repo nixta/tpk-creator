@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Tile Package Estimator</title>
+    <link rel='SHORTCUT ICON' href='/favicon.ico'>
+
+    <!-- Viewport mobile tag for sensible mobile support -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="//js.arcgis.com/3.10/js/esri/css/esri.css">   
+    <link rel="stylesheet" type="text/css" href="//esri.github.io/bootstrap-map-js/src/css/bootstrapmap.css">
+
+    <link rel="stylesheet" type="text/css" href="res/app.css">
+
+    <style>
+      #extentMap {
+        height: 400px;
+      }
+
+      .hidden-on-start {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+
+    <div class="container main">
+      
+      <div class="page-header hidden-xs">
+        <h2>Tile Package Estimator</h2>
+      </div>
+
+      <div class="row">
+
+        <!-- Set extent and estimate size -->
+        <div class="col-sm-12">
+          <div class="panel panel-primary" id="lastPanel">
+
+            <div class="panel-heading">Estimate size
+              <span id="signInStatus" class="hidden-on-start"></span>
+
+              <button type="button" class="btn btn-info btn-xs pull-right hidden-on-start" onClick="doOAuth()" id="esriSignIn">sign In</button>
+
+              <div class="btn-group pull-right hidden-on-start" id="esriSignOut">
+                <button class="btn btn-info btn-xs"><span id="esriUsername"></span></button>
+                <button class="btn btn-info btn-xs dropdown-toggle" type="button" data-toggle="dropdown"><span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" role="menu">
+                  <li><a href="#" onClick="signOut()">Sign out</a></li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="panel-body">
+              <form id="extentForm" class="form-horizontal" method="post"
+                data-bv-message="This value is not valid"
+                data-bv-live="disabled"
+                >
+
+                <div class="form-group">
+                  <div id="extentMap" class="result-map"></div>
+                </div>
+
+<!-- 
+                <div class="form-group">
+                  <div class="col-sm-6"></div>
+                  <label class="col-sm-2 control-label" for="gnipMaxRecords">Max Records</label>
+                  <div class="col-sm-4">
+                    <input type="datetime" id="gnipMaxRecords" class="form-control" value="" placeholder="All available">
+                    <span class="searchclear glyphicon glyphicon-remove-circle"></span>
+                  </div>
+                </div>
+ -->
+
+                <div class="form-group">
+                  <div class="col-sm-12">
+                    <button type="button" class="btn btn-primary pull-right" id="estimateButton" onClick="estimateTPK()">Estimate Tile Package</button>
+                  </div>
+                </div>
+
+              </form>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <script type="text/javascript" src="res/amd.prep.js"></script>
+    <script type="text/javascript" src="//js.arcgis.com/3.10compact"></script>
+
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+
+    <script type="text/javascript" src="res/authenticate.js"></script>
+    <script type="text/javascript" src="res/login.js"></script>
+    <script type="text/javascript" src="res/map.js"></script>
+    <script type="text/javascript" src="res/app.js"></script>
+  </body>
+</html>

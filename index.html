@@ -22,23 +22,45 @@
       .hidden-on-start {
         display: none;
       }
+
+      #tileCountDisplay {
+        margin-left: 10px;
+      }
+
+      #zoomLevels {
+        margin-left: 5px;
+      }
+
+      #zoomLevels > .btn.active {
+        background-color: orange;
+      }
+
+      #tpkSizeDisplay {
+        margin-left: 10px);
+      }
+
+      #tpkSizeDisplay.invalid {
+        text-decoration: line-through;
+      }
+
+      #zoomLevels > .btn.current-zoom {
+        border-color: red;
+        border-width: 2px;
+        margin-top: -1px;
+      }
     </style>
   </head>
   <body>
 
     <div class="container main">
       
-      <div class="page-header hidden-xs">
-        <h2>Tile Package Estimator</h2>
-      </div>
-
       <div class="row">
 
         <!-- Set extent and estimate size -->
         <div class="col-sm-12">
           <div class="panel panel-primary" id="lastPanel">
 
-            <div class="panel-heading">Estimate size
+            <div class="panel-heading">Tile Package Estimator
               <span id="signInStatus" class="hidden-on-start"></span>
 
               <button type="button" class="btn btn-info btn-xs pull-right hidden-on-start" onClick="doOAuth()" id="esriSignIn">sign In</button>
@@ -63,20 +85,75 @@
                   <div id="extentMap" class="result-map"></div>
                 </div>
 
-<!-- 
-                <div class="form-group">
-                  <div class="col-sm-6"></div>
-                  <label class="col-sm-2 control-label" for="gnipMaxRecords">Max Records</label>
-                  <div class="col-sm-4">
-                    <input type="datetime" id="gnipMaxRecords" class="form-control" value="" placeholder="All available">
-                    <span class="searchclear glyphicon glyphicon-remove-circle"></span>
-                  </div>
-                </div>
- -->
-
                 <div class="form-group">
                   <div class="col-sm-12">
-                    <button type="button" class="btn btn-primary pull-right" id="estimateButton" onClick="estimateTPK()">Estimate Tile Package</button>
+                    Select Zoom Levels: 
+                    <div class="btn-group" data-toggle="buttons-checkbox" id="zoomLevels">
+                        <button type="button" class="btn btn-xs btn-primary" 
+                            data-toggle="tooltip" data-placement="bottom"
+                            data-tile-count="0" data-zoom-level="0">0</button>
+                        <button type="button" class="btn btn-xs btn-primary" 
+                            data-toggle="tooltip" data-placement="bottom"
+                            data-tile-count="0" data-zoom-level="1">1</button>
+                        <button type="button" class="btn btn-xs btn-primary" 
+                            data-toggle="tooltip" data-placement="bottom"
+                            data-tile-count="0" data-zoom-level="2">2</button>
+                        <button type="button" class="btn btn-xs btn-primary" 
+                            data-toggle="tooltip" data-placement="bottom"
+                            data-tile-count="0" data-zoom-level="3">3</button>
+                        <button type="button" class="btn btn-xs btn-primary" 
+                            data-toggle="tooltip" data-placement="bottom"
+                            data-tile-count="0" data-zoom-level="4">4</button>
+                        <button type="button" class="btn btn-xs btn-primary" 
+                            data-toggle="tooltip" data-placement="bottom"
+                            data-tile-count="0" data-zoom-level="5">5</button>
+                        <button type="button" class="btn btn-xs btn-primary" 
+                            data-toggle="tooltip" data-placement="bottom"
+                            data-tile-count="0" data-zoom-level="6">6</button>
+                        <button type="button" class="btn btn-xs btn-primary" 
+                            data-toggle="tooltip" data-placement="bottom"
+                            data-tile-count="0" data-zoom-level="7">7</button>
+                        <button type="button" class="btn btn-xs btn-primary" 
+                            data-toggle="tooltip" data-placement="bottom"
+                            data-tile-count="0" data-zoom-level="8">8</button>
+                        <button type="button" class="btn btn-xs btn-primary" 
+                            data-toggle="tooltip" data-placement="bottom"
+                            data-tile-count="0" data-zoom-level="9">9</button>
+                        <button type="button" class="btn btn-xs btn-primary" 
+                            data-toggle="tooltip" data-placement="bottom"
+                            data-tile-count="0" data-zoom-level="10">10</button>
+                        <button type="button" class="btn btn-xs btn-primary" 
+                            data-toggle="tooltip" data-placement="bottom"
+                            data-tile-count="0" data-zoom-level="11">11</button>
+                        <button type="button" class="btn btn-xs btn-primary" 
+                            data-toggle="tooltip" data-placement="bottom"
+                            data-tile-count="0" data-zoom-level="12">12</button>
+                        <button type="button" class="btn btn-xs btn-primary" 
+                            data-toggle="tooltip" data-placement="bottom"
+                            data-tile-count="0" data-zoom-level="13">13</button>
+                        <button type="button" class="btn btn-xs btn-primary" 
+                            data-toggle="tooltip" data-placement="bottom"
+                            data-tile-count="0" data-zoom-level="14">14</button>
+                        <button type="button" class="btn btn-xs btn-primary" 
+                            data-toggle="tooltip" data-placement="bottom"
+                            data-tile-count="0" data-zoom-level="15">15</button>
+                        <button type="button" class="btn btn-xs btn-primary" 
+                            data-toggle="tooltip" data-placement="bottom"
+                            data-tile-count="0" data-zoom-level="16">16</button>
+                        <button type="button" class="btn btn-xs btn-primary" 
+                            data-toggle="tooltip" data-placement="bottom"
+                            data-tile-count="0" data-zoom-level="17">17</button>
+                        <button type="button" class="btn btn-xs btn-primary" 
+                            data-toggle="tooltip" data-placement="bottom"
+                            data-tile-count="0" data-zoom-level="18">18</button>
+                        <button type="button" class="btn btn-xs btn-primary" 
+                            data-toggle="tooltip" data-placement="bottom"
+                            data-tile-count="0" data-zoom-level="19">19</button>
+                    </div>
+                    <span id="tileCountDisplay"></span>
+                    <span id="tpkSizeDisplay"></span>
+                    <button type="button" class="btn btn-primary pull-right" id="estimateButton" onClick="estimateTPK()"
+                    data-toggle="tooltip" data-placement="bottom" title="test test">Estimate Size</button>
                   </div>
                 </div>
 
@@ -90,11 +167,13 @@
 
     </div>
 
-    <script type="text/javascript" src="res/amd.prep.js"></script>
-    <script type="text/javascript" src="//js.arcgis.com/3.10compact"></script>
-
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+
+    <script type="text/javascript" src="res/jquery.cookie.js"></script>
+
+    <script type="text/javascript" src="res/amd.prep.js"></script>
+    <script type="text/javascript" src="//js.arcgis.com/3.10compact"></script>
 
     <script type="text/javascript" src="res/authenticate.js"></script>
     <script type="text/javascript" src="res/login.js"></script>

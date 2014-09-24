@@ -370,7 +370,7 @@ function showEstimatedTileCount() {
       
       var countStr = (''+count).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
       $('#tileCountDisplay').text(countStr + ' tile' + (count!==1?'s':''));
-      $('#estimateButton').disable(count > maxEstimateCount);
+      $('#estimateButton').disable(count === 0 || count > maxEstimateCount);
     });
 }
 

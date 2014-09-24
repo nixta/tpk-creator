@@ -282,7 +282,7 @@ function getExtentsForGeomExtentWithTileInfo(extent, zoomLevels, tileInfo, count
         }
       }
     } else {
-      extents = (maxCol-minCol-1) * (maxRow-minRow-1); 
+      extents = (maxCol-minCol) * (maxRow-minRow);
     }
     tilesByZoomLevel[currentLOD.level] = extents;
   }
@@ -364,14 +364,23 @@ function showEstimatedTileCount() {
 
       for (var zoomLevel in tileExtents) {
         var tileCountForZoomLevel = tileExtents[zoomLevel];
-        $('#zoomLevels button[data-zoom-level="' + zoomLevel + '"').attr('data-tile-count', tileCountForZoomLevel);
+        $('#zoomLevels button[data-zoom-level="' + zoomLevel + '"]').attr('data-tile-count', tileCountForZoomLevel);
         count += tileCountForZoomLevel;
       }
+
+      $('#zoomLevels').attr('data-tile-count', count);
       
       var countStr = (''+count).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
       $('#tileCountDisplay').text(countStr + ' tile' + (count!==1?'s':''));
-      $('#estimateButton').disable(count === 0 || count > maxEstimateCount);
+      setEstimateButtonEnabled();
     });
+}
+
+function setEstimateButtonEnabled() {
+  var count = parseInt($('#zoomLevels').attr('data-tile-count'));
+  $('#estimateButton').disable((count === 0) ||
+                             (count > maxEstimateCount) ||
+                             (__appState().portalUser === undefined));
 }
 
 function saveButtons() {

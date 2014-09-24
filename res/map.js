@@ -13,5 +13,35 @@ function createMap(mapId, callback) {
         });
         callback(maps[mapId]);
     });
+  } else {
+    callback(maps[mapId]);
   }
+}
+
+function initializeMap() {
+  createMap('extentMap', function (theMap) {
+    __appState().map = theMap;
+    theMap.getLayer(theMap.basemapLayerIds[0]).on('load', showEstimatedTileCount);
+
+    require(['esri/layers/GraphicsLayer',
+             'esri/symbols/SimpleLineSymbol', 
+             'esri/symbols/SimpleFillSymbol', 
+             'esri/renderers/SimpleRenderer',
+             'esri/Color'], 
+      function (GraphicsLayer, SimpleLineSymbol, SimpleFillSymbol, SimpleRenderer, Color) {
+      var newLayer = new GraphicsLayer(),
+          tileOutline = new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color([255,0,0,0.5]), 0.5),
+          tileFill = new SimpleFillSymbol(SimpleFillSymbol.STYLE_NULL,
+            tileOutline,
+            new Color([0,200,0,0.5]));
+      newLayer.renderer = new SimpleRenderer(tileFill);
+      __appState().tileDisplayLayer = newLayer;
+      theMap.addLayer(newLayer);
+      theMap.on('load', function () {
+        theMap.on('extent-change', showEstimatedTileCount);
+        showCurrentZoom();
+      });
+      theMap.on('zoom-end', showCurrentZoom);
+    });
+  });
 }

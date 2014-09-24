@@ -14,6 +14,8 @@
 
     <link rel="stylesheet" type="text/css" href="res/app.css">
 
+    <link rel="stylesheet" type="text/css" href="res/ladda-themeless.min.css">
+
     <style>
       #extentMap {
         height: 400px;
@@ -159,8 +161,9 @@
                     <span id="tpkSizeDisplay"></span>
                   </div>
                   <div class="col-sm-2">
-                    <button type="button" class="btn btn-primary pull-right" disabled="true" id="estimateButton" onClick="estimateTPK()"
-                    data-toggle="tooltip" data-placement="left" title="Get TPK Size Estimate">Estimate Size</button>
+                    <button type="button" class="btn btn-primary pull-right ladda-button" disabled="true" id="estimateButton" onClick="estimateTPK()"
+                    data-toggle="tooltip" data-placement="left" title="Get TPK Size Estimate"
+                    data-style="zoom-out"><span class="ladda-label">Estimate Size</span></button>
                   </div>
                 </div>
 
@@ -179,12 +182,17 @@
 
     <script type="text/javascript" src="res/jquery.cookie.js"></script>
 
+    <script src="res/spin.min.js"></script>
+    <script src="res/ladda.min.js"></script>
+
     <script type="text/javascript" src="res/amd.prep.js"></script>
     <script type="text/javascript" src="//js.arcgis.com/3.10compact"></script>
 
     <script type="text/javascript" src="res/authenticate.js"></script>
     <script type="text/javascript" src="res/login.js"></script>
     <script type="text/javascript" src="res/map.js"></script>
+    <script type="text/javascript" src="res/tpk.js"></script>
+    <script type="text/javascript" src="res/ui.js"></script>
     <script type="text/javascript" src="res/app.js"></script>
   </body>
 </html>

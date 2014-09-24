@@ -71,6 +71,12 @@ function showCurrentZoom() {
 }
 
 function estimateTPK() {
+
+  if (__appState().portalUser === undefined) {
+    alert('You must authorize the app!');
+    return;
+  }
+
   var geomToEstimate = __appState().map.extent,
       levelsToUse = getSelectedLevels();
 
@@ -94,14 +100,17 @@ function estimateTPK() {
   //   });
 
   setTileSizeText(-1);
+  $('#estimateButton').disable(true);
   requestEstimate(geomToEstimate, levelsToUse)
     .then(function gotEstimate(estimate) {
       console.log('Got estimate: ' + estimate.totalTilesToExport + ' tiles in ' + estimate.totalSize/1024/1024 + 'Mb');
       setTileSizeText(estimate.totalSize);
+      $('#estimateButton').disable(false);
     }, function estimateFailed(err) {
       console.error('Failed to get estimate:');
       console.log(JSON.stringify(err, null, '  '));
       setTileSizeText('Failed to get estimate!');
+      $('#estimateButton').disable(false);
     });
 }
 

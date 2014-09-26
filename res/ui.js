@@ -16,10 +16,12 @@ function initializeUI() {
       var c = $(this).attr('data-tile-count'),
           p = parseInt(c) === 1?'':'s';
       return c + ' tile' + p;
-    }
+    },
+    placement: 'top'
   });
 
   $('#estimateButton').tooltip();
+  $('#tpkButton').tooltip();
 
   var savedButtons = $.cookie('selectedLevels');
   if (savedButtons !== undefined) {
@@ -53,7 +55,7 @@ function showEstimatedTileCount() {
       
       var countStr = (''+count).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
       $('#tileCountDisplay').text(countStr + ' tile' + (count!==1?'s':''));
-      setEstimateButtonEnabled();
+      setTpkButtonsEnabled();
     });
 }
 
@@ -71,7 +73,6 @@ function invalidateEstimate() {
 }
 
 function estimateTPK() {
-
   if (__appState().portalUser === undefined) {
     alert('You must authorize the app!');
     return;
@@ -82,6 +83,18 @@ function estimateTPK() {
 
   // showTilesOnMap(geomToEstimate, levelsToUse);
   makeEstimateRequest.bind(this)(geomToEstimate, levelsToUse);
+}
+
+function getTPK() {
+  if (__appState().portalUser === undefined) {
+    alert('You must authorize the app!');
+    return;
+  }
+
+  var geom = __appState().map.extent,
+      levelsToUse = getSelectedLevels();
+
+  makeTpkRequest.bind(this)(geom, levelsToUse);
 }
 
 function showTilesOnMap(geomToEstimate, levelsToUse) {
@@ -110,18 +123,34 @@ function makeEstimateRequest(geomToEstimate, levelsToUse) {
   var l = Ladda.create($('#estimateButton')[0]);
   l.start();
   $('#estimateButton').tooltip('hide');
-  // $('#estimateButton').disable(true);
   requestTPKEstimate(geomToEstimate, levelsToUse)
     .then(function gotEstimate(estimate) {
       console.log('Got estimate: ' + estimate.totalTilesToExport + ' tiles in ' + estimate.totalSize/1024/1024 + 'Mb');
       setTileSizeText(estimate.totalSize);
-      // $('#estimateButton').disable(false);
       l.stop();
     }, function estimateFailed(err) {
       console.error('Failed to get estimate:');
       console.log(JSON.stringify(err, null, '  '));
       setTileSizeText('Failed to get estimate!');
-      // $('#estimateButton').disable(false);
+      l.stop();
+    });
+}
+
+function makeTpkRequest(geom, levelsToUse) {
+  console.log('Generating TPK for levels:');
+  console.log(levelsToUse);
+
+  var l = Ladda.create($('#tpkButton')[0]);
+  l.start();
+  $('#tpkButton').tooltip('hide');
+  requestTPK(geom, levelsToUse)
+    .then(function gotTpk(tpkUrl) {
+      console.log('Got tpk: ' + tpkUrl);
+      l.stop();
+      $('#downloadTPK').attr('href', tpkUrl).fadeIn().css('display','inline-block');
+    }, function tpkFailed(err) {
+      console.error('Failed to get tpk:');
+      console.log(JSON.stringify(err, null, '  '));
       l.stop();
     });
 }
@@ -158,9 +187,11 @@ function saveSelectedLevels(clickedButton) {
   $(this).blur();
 }
 
-function setEstimateButtonEnabled() {
+function setTpkButtonsEnabled() {
   var count = parseInt($('#zoomLevels').attr('data-tile-count'));
-  $('#estimateButton').disable((count === 0) ||
-                             (count > maxEstimateCount) ||
-                             (__appState().portalUser === undefined));
+  var disabled = (count === 0) ||
+                 (count > maxEstimateCount) ||
+                 (__appState().portalUser === undefined);
+  $('#estimateButton').disable(disabled);
+  $('#tpkButton').disable(disabled);
 }

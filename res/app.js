@@ -1,10 +1,3 @@
-var basemaps = {
-  topo: {
-    basicURL: 'http://services.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer',
-    tilePackageURL: 'http://tiledbasemaps.arcgis.com/arcgis/rest/services/World_Topo_Map/MapServer'
-  }
-};
-
 jQuery.fn.extend({
     disable: function(state) {
         return this.each(function() {

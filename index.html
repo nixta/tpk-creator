@@ -54,6 +54,14 @@
       .panel-body {
         padding-top: 0px;
       }
+
+      .form-group:last-of-type {
+        margin-bottom: 0px;
+      }
+
+      .form-group.pull-right .btn {
+        margin-right: 10px;
+      }
     </style>
   </head>
   <body>
@@ -92,79 +100,86 @@
                 </div>
 
                 <div class="form-group">
-                  <div class="col-sm-10">
-                    Select Zoom Levels: 
+                  <div class="col-sm-12">
+                    Levels: 
                     <div class="btn-group" data-toggle="buttons-checkbox" id="zoomLevels"
                       data-tile-count="0">
                         <button type="button" class="btn btn-xs btn-primary" 
-                            data-toggle="tooltip" data-placement="bottom"
+                            data-toggle="tooltip"
                             data-tile-count="0" data-zoom-level="0">0</button>
                         <button type="button" class="btn btn-xs btn-primary" 
-                            data-toggle="tooltip" data-placement="bottom"
+                            data-toggle="tooltip"
                             data-tile-count="0" data-zoom-level="1">1</button>
                         <button type="button" class="btn btn-xs btn-primary" 
-                            data-toggle="tooltip" data-placement="bottom"
+                            data-toggle="tooltip"
                             data-tile-count="0" data-zoom-level="2">2</button>
                         <button type="button" class="btn btn-xs btn-primary" 
-                            data-toggle="tooltip" data-placement="bottom"
+                            data-toggle="tooltip"
                             data-tile-count="0" data-zoom-level="3">3</button>
                         <button type="button" class="btn btn-xs btn-primary" 
-                            data-toggle="tooltip" data-placement="bottom"
+                            data-toggle="tooltip"
                             data-tile-count="0" data-zoom-level="4">4</button>
                         <button type="button" class="btn btn-xs btn-primary" 
-                            data-toggle="tooltip" data-placement="bottom"
+                            data-toggle="tooltip"
                             data-tile-count="0" data-zoom-level="5">5</button>
                         <button type="button" class="btn btn-xs btn-primary" 
-                            data-toggle="tooltip" data-placement="bottom"
+                            data-toggle="tooltip"
                             data-tile-count="0" data-zoom-level="6">6</button>
                         <button type="button" class="btn btn-xs btn-primary" 
-                            data-toggle="tooltip" data-placement="bottom"
+                            data-toggle="tooltip"
                             data-tile-count="0" data-zoom-level="7">7</button>
                         <button type="button" class="btn btn-xs btn-primary" 
-                            data-toggle="tooltip" data-placement="bottom"
+                            data-toggle="tooltip"
                             data-tile-count="0" data-zoom-level="8">8</button>
                         <button type="button" class="btn btn-xs btn-primary" 
-                            data-toggle="tooltip" data-placement="bottom"
+                            data-toggle="tooltip"
                             data-tile-count="0" data-zoom-level="9">9</button>
                         <button type="button" class="btn btn-xs btn-primary" 
-                            data-toggle="tooltip" data-placement="bottom"
+                            data-toggle="tooltip"
                             data-tile-count="0" data-zoom-level="10">10</button>
                         <button type="button" class="btn btn-xs btn-primary" 
-                            data-toggle="tooltip" data-placement="bottom"
+                            data-toggle="tooltip"
                             data-tile-count="0" data-zoom-level="11">11</button>
                         <button type="button" class="btn btn-xs btn-primary" 
-                            data-toggle="tooltip" data-placement="bottom"
+                            data-toggle="tooltip"
                             data-tile-count="0" data-zoom-level="12">12</button>
                         <button type="button" class="btn btn-xs btn-primary" 
-                            data-toggle="tooltip" data-placement="bottom"
+                            data-toggle="tooltip"
                             data-tile-count="0" data-zoom-level="13">13</button>
                         <button type="button" class="btn btn-xs btn-primary" 
-                            data-toggle="tooltip" data-placement="bottom"
+                            data-toggle="tooltip"
                             data-tile-count="0" data-zoom-level="14">14</button>
                         <button type="button" class="btn btn-xs btn-primary" 
-                            data-toggle="tooltip" data-placement="bottom"
+                            data-toggle="tooltip"
                             data-tile-count="0" data-zoom-level="15">15</button>
                         <button type="button" class="btn btn-xs btn-primary" 
-                            data-toggle="tooltip" data-placement="bottom"
+                            data-toggle="tooltip"
                             data-tile-count="0" data-zoom-level="16">16</button>
                         <button type="button" class="btn btn-xs btn-primary" 
-                            data-toggle="tooltip" data-placement="bottom"
+                            data-toggle="tooltip"
                             data-tile-count="0" data-zoom-level="17">17</button>
                         <button type="button" class="btn btn-xs btn-primary" 
-                            data-toggle="tooltip" data-placement="bottom"
+                            data-toggle="tooltip"
                             data-tile-count="0" data-zoom-level="18">18</button>
                         <button type="button" class="btn btn-xs btn-primary" 
-                            data-toggle="tooltip" data-placement="bottom" data-container="body"
+                            data-toggle="tooltip" data-container="body"
                             data-tile-count="0" data-zoom-level="19">19</button>
                     </div>
                     <span id="tileCountDisplay"></span>
                     <span id="tpkSizeDisplay"></span>
                   </div>
-                  <div class="col-sm-2">
-                    <button type="button" class="btn btn-primary pull-right ladda-button" disabled="true" id="estimateButton" onClick="estimateTPK()"
-                    data-toggle="tooltip" data-placement="left" title="Get TPK Size Estimate"
+                </div>
+
+                <div class="form-group pull-right">
+                    <button type="button" class="btn btn-primary ladda-button" disabled="true" id="estimateButton" onClick="estimateTPK()"
                     data-style="zoom-out"><span class="ladda-label">Estimate Size</span></button>
-                  </div>
+                    <button type="button" class="btn btn-primary ladda-button" disabled="true" id="tpkButton" onClick="getTPK()"
+                    data-style="zoom-out"><span class="ladda-label">Get TPK</span></button>
+                    <a id="downloadTPK" class="btn btn-success hidden-on-start"
+                      data-toggle="tooltip" data-placement="top" title="Download TPK"
+                      href="http://tiledbasemaps.arcgis.com/arcgis/rest/directories/arcgisoutput/World_Topo_Map_MapServer/_agsLMapCacheL8112/Layers.tpk">
+                      <span class="glyphicon glyphicon-download-alt"></span>
+                    </a>
                 </div>
 
               </form>

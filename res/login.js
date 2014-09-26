@@ -12,7 +12,7 @@ function setUILoggedIn() {
         $(signInButton).fadeOut('fast', function () {
           $(signOutButton).fadeIn('slow');
         });
-        setEstimateButtonEnabled();
+        setTpkButtonsEnabled();
       }
     ).otherwise(
       function(error) {
@@ -27,5 +27,5 @@ function setUILoggedOut() {
   $(signOutButton).fadeOut('fast', function() {
     $(signInButton).fadeIn('slow');
   });
-  setEstimateButtonEnabled();
+  setTpkButtonsEnabled();
 }

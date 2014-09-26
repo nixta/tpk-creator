@@ -1,4 +1,59 @@
+var basemaps = {
+  topo: {
+    basicURL: 'http://services.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer',
+    tilePackageURL: 'http://tiledbasemaps.arcgis.com/arcgis/rest/services/World_Topo_Map/MapServer'
+  }
+};
+
+function pollJob(def, token, functionUrl, jobId) {
+  var statusURL = functionUrl + '/jobs/' + jobId,
+      pollRequestData = {
+        token: token,
+        f: 'json'
+      };
+
+  function readJobResult(status) {
+    var resultUrl = statusURL + '/' + status.results.out_service_url.paramUrl;
+    $.post(resultUrl, pollRequestData, null, 'json')
+      .then(function parseJobResult(jobResult) {
+        def.resolve(jobResult.value);
+      })
+      .fail(function (err) {
+        console.error('Failed to read completed job results: ' + jobId);
+        def.reject(err);
+      });
+  }
+
+  $.post(statusURL, pollRequestData, null, 'json')
+    .done(function checkStatus(status) {
+      if (status.jobStatus === 'esriJobSucceeded') {
+        window.clearInterval(__appState().jobs[jobId].pollingId);
+        readJobResult(status);
+      } else if (status.jobStatus === 'esriJobFailed') {
+        window.clearInterval(__appState().jobs[jobId].pollingId);
+        def.reject(status);
+      } else {
+        console.log(jobId + ' continuing: ' + status.jobStatus);
+      }
+    })
+    .fail(function (err) {
+      window.clearInterval(__appState().jobs[jobId].pollingId);
+      console.error('Unable to poll job status: ' + jobId);
+      def.reject(err);
+    });
+}
+
 function requestTPKEstimate(targetGeom, zoomLevels) {
+  var user = __appState().portalUser;
+  if (user === undefined) {
+    console.error('Not logged in!');
+    return;
+  }
+
+  return performTPKOperation('topo', targetGeom, zoomLevels, user.credential.token, true);
+}
+
+function requestTPK(targetGeom, zoomLevels) {
   var def = new dojo.Deferred();
 
   var user = __appState().portalUser;
@@ -7,64 +62,47 @@ function requestTPKEstimate(targetGeom, zoomLevels) {
     return;
   }
 
+  performTPKOperation('topo', targetGeom, zoomLevels, user.credential.token, false)
+    .then(function (tpkResultUrl) {
+      $.post(tpkResultUrl, {
+        token: user.credential.token,
+        f: 'json'
+      })
+        .done(function (tpkFilesInfo) {
+          tpkFilesInfo = JSON.parse(tpkFilesInfo);
+          def.resolve(tpkFilesInfo.files[0].url);
+        })
+        .fail(function (err) {
+          def.reject(err);
+        });
+    });
+
+  return def;
+}
+
+function performTPKOperation(basemapName, targetGeom, zoomLevels, token, estimate) {
+  var def = new dojo.Deferred();
+
   var requestData = {
     tilePackage: true,
     exportBy: 'LevelID',
     exportExtent: JSON.stringify(targetGeom.toJson()),
-    token: user.credential.token,
+    token: token,
     levels: zoomLevels.join(),
     f: 'json'
   };
 
-  var estimateURL = basemaps.topo.tilePackageURL + '/estimateExportTilesSize';
+  var url = basemaps[basemapName].tilePackageURL + (estimate?'/estimateExportTilesSize':'/exportTiles');
 
-  function pollJob(jobId) {
-    var statusURL = estimateURL + '/jobs/' + jobId,
-        pollRequestData = {
-          token: requestData.token,
-          f: 'json'
-        };
-
-    function readJobResult(status) {
-      var resultUrl = statusURL + '/' + status.results.out_service_url.paramUrl;
-      $.post(resultUrl, pollRequestData, null, 'json')
-        .then(function parseJobResult(jobResult) {
-          def.resolve(jobResult.value);
-        })
-        .fail(function (err) {
-          console.error('Failed to read completed job results: ' + jobId);
-          def.reject(err);
-        });
-    }
-
-    $.post(statusURL, pollRequestData, null, 'json')
-      .done(function checkStatus(status) {
-        if (status.jobStatus === 'esriJobSucceeded') {
-          window.clearInterval(__appState().jobs[jobId].pollingId);
-          readJobResult(status);
-        } else if (status.jobStatus === 'esriJobFailed') {
-          window.clearInterval(__appState().jobs[jobId].pollingId);
-          def.reject(status);
-        } else {
-          console.log(jobId + ' continuing: ' + status.jobStatus);
-        }
-      })
-      .fail(function (err) {
-        window.clearInterval(__appState().jobs[jobId].pollingId);
-        console.error('Unable to poll job status: ' + jobId);
-        def.reject(err);
-      });
-  }
-
-  $.post(estimateURL, requestData, null, 'json')
-    .done(function estimateRequestPostedOK(estimateData) {
-      var jobId = estimateData.jobId;
+  $.post(url, requestData, null, 'json')
+    .done(function estimateRequestPostedOK(jobJSON) {
+      var jobId = jobJSON.jobId;
 
       __appState().jobs[jobId] = {
-        status: estimateData.jobStatus,
+        status: jobJSON.jobStatus,
         lastChecked: new Date(),
         pollingId: window.setInterval(function () {
-          pollJob(jobId);
+          pollJob(def, requestData.token, url, jobId);
         }, 2000)
       };
     })

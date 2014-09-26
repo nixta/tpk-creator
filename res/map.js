@@ -39,9 +39,16 @@ function initializeMap() {
       theMap.addLayer(newLayer);
       theMap.on('load', function () {
         theMap.on('extent-change', showEstimatedTileCount);
+        theMap.on('basemap-change', basemapChanged);
+        basemapChanged();
         showCurrentZoom();
       });
       theMap.on('zoom-end', showCurrentZoom);
     });
   });
+}
+
+function getBasemapTileInfo() {
+  var map = __appState().map;
+  return map.getLayer(map.basemapLayerIds[0]).tileInfo;
 }

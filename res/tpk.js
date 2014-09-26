@@ -1,11 +1,74 @@
 var basemaps = {
   topo: {
+    name: 'Topographic',
     basicURL: 'http://services.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer',
     tilePackageURL: 'http://tiledbasemaps.arcgis.com/arcgis/rest/services/World_Topo_Map/MapServer'
+  },
+  streets: {
+    name: 'World Streets',
+    basicURL: 'http://services.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer',
+    tilePackageURL: 'http://tiledbasemaps.arcgis.com/arcgis/rest/services/World_Street_Map/MapServer'
+  },
+  "national-geographic": {
+    name: 'National Geographic',
+    basicURL: 'http://services.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer',
+    tilePackageURL: 'http://tiledbasemaps.arcgis.com/arcgis/rest/services/NatGeo_World_Map/MapServer'
+  },
+  oceans: {
+    name: 'Oceans',
+    basicURL: 'http://services.arcgisonline.com/ArcGIS/rest/services/Ocean_Basemap/MapServer',
+    tilePackageURL: 'http://tiledbasemaps.arcgis.com/arcgis/rest/services/Ocean_Basemap/MapServer'
+  },
+  satellite: {
+    name: 'Satellite Imagery',
+    basicURL: 'http://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer',
+    tilePackageURL: 'http://tiledbasemaps.arcgis.com/arcgis/rest/services/World_Imagery/MapServer'
+  },
+  gray: {
+    name: 'Light Gray Canvas',
+    basicURL: 'http://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Light_Gray_Base/MapServer',
+    tilePackageURL: 'http://tiledbasemaps.arcgis.com/arcgis/rest/services/Canvas/World_Light_Gray_Base/MapServer'
   }
 };
 
-function pollJob(def, token, functionUrl, jobId) {
+function requestTPKEstimate(basemap, targetGeom, zoomLevels) {
+  var user = __appState().portalUser;
+  if (user === undefined) {
+    console.error('Not logged in!');
+    return;
+  }
+
+  return performTPKOperation(basemap, targetGeom, zoomLevels, user.credential.token, true);
+}
+
+function requestTPK(basemap, targetGeom, zoomLevels) {
+  var def = new dojo.Deferred();
+
+  var user = __appState().portalUser;
+  if (user === undefined) {
+    console.error('Not logged in!');
+    return;
+  }
+
+  performTPKOperation(basemap, targetGeom, zoomLevels, user.credential.token, false)
+    .then(function (tpkResultUrl) {
+      $.post(tpkResultUrl, {
+        token: user.credential.token,
+        f: 'json'
+      })
+        .done(function (tpkFilesInfo) {
+          tpkFilesInfo = JSON.parse(tpkFilesInfo);
+          def.resolve(tpkFilesInfo.files[0].url);
+        })
+        .fail(function (err) {
+          def.reject(err);
+        });
+    });
+
+  return def;
+}
+
+function pollJobStatus(def, token, functionUrl, jobId) {
   var statusURL = functionUrl + '/jobs/' + jobId,
       pollRequestData = {
         token: token,
@@ -43,43 +106,6 @@ function pollJob(def, token, functionUrl, jobId) {
     });
 }
 
-function requestTPKEstimate(targetGeom, zoomLevels) {
-  var user = __appState().portalUser;
-  if (user === undefined) {
-    console.error('Not logged in!');
-    return;
-  }
-
-  return performTPKOperation('topo', targetGeom, zoomLevels, user.credential.token, true);
-}
-
-function requestTPK(targetGeom, zoomLevels) {
-  var def = new dojo.Deferred();
-
-  var user = __appState().portalUser;
-  if (user === undefined) {
-    console.error('Not logged in!');
-    return;
-  }
-
-  performTPKOperation('topo', targetGeom, zoomLevels, user.credential.token, false)
-    .then(function (tpkResultUrl) {
-      $.post(tpkResultUrl, {
-        token: user.credential.token,
-        f: 'json'
-      })
-        .done(function (tpkFilesInfo) {
-          tpkFilesInfo = JSON.parse(tpkFilesInfo);
-          def.resolve(tpkFilesInfo.files[0].url);
-        })
-        .fail(function (err) {
-          def.reject(err);
-        });
-    });
-
-  return def;
-}
-
 function performTPKOperation(basemapName, targetGeom, zoomLevels, token, estimate) {
   var def = new dojo.Deferred();
 
@@ -93,6 +119,7 @@ function performTPKOperation(basemapName, targetGeom, zoomLevels, token, estimat
   };
 
   var url = basemaps[basemapName].tilePackageURL + (estimate?'/estimateExportTilesSize':'/exportTiles');
+  console.log(url);
 
   $.post(url, requestData, null, 'json')
     .done(function estimateRequestPostedOK(jobJSON) {
@@ -102,7 +129,7 @@ function performTPKOperation(basemapName, targetGeom, zoomLevels, token, estimat
         status: jobJSON.jobStatus,
         lastChecked: new Date(),
         pollingId: window.setInterval(function () {
-          pollJob(def, requestData.token, url, jobId);
+          pollJobStatus(def, requestData.token, url, jobId);
         }, 2000)
       };
     })
@@ -110,124 +137,6 @@ function performTPKOperation(basemapName, targetGeom, zoomLevels, token, estimat
       console.error('Unable to request estimate');
       console.log(err);
     });
-
-  return def;
-}
-
-function getExtentCountsForGeometry(targetGeom, zoomLevels) {
-  var def = new dojo.Deferred();
-
-  (function () {
-    var exts = getExtentsForGeomExtentWithTileInfo(targetGeom.getExtent(), zoomLevels, getBasemapTileInfo(), true);
-    def.resolve(exts);
-  })();
-
-  return def;
-}
-
-function getExtentsForGeometry(targetGeom, zoomLevels) {
-  var def = new dojo.Deferred();
-
-  (function () {
-    var exts = getExtentsForGeomExtentWithTileInfo(targetGeom.getExtent(), zoomLevels, getBasemapTileInfo(), false);
-    def.resolve(exts);
-  })();
-
-  return def;
-}
-
-function getBasemapTileInfo() {
-  var map = __appState().map;
-  return map.getLayer(map.basemapLayerIds[0]).tileInfo;
-}
-
-function getExtentsForGeomExtentWithTileInfo(extent, zoomLevels, tileInfo, countOnly) {
-  var selectedLODs = [];
-
-  for (var i=0; i<tileInfo.lods.length; i++) {
-    if (zoomLevels.indexOf(tileInfo.lods[i].level) !== -1) {
-      selectedLODs.push(tileInfo.lods[i]);
-    }
-  }
-
-  var tilesByZoomLevel = {};
-  
-  for (var lodIndex=0; lodIndex < selectedLODs.length; lodIndex++) {
-    var currentLOD = selectedLODs[lodIndex];
-
-    var tileWidth = tileInfo.width * currentLOD.resolution,
-        tileHeight = tileInfo.height * currentLOD.resolution;
-
-    var minCol = Math.floor((extent.xmin - tileInfo.origin.x) / tileWidth),
-        minRow = Math.floor(-(extent.ymax - tileInfo.origin.y) / tileHeight),
-        maxCol = Math.ceil((extent.xmax - tileInfo.origin.x) / tileWidth),
-        maxRow = Math.ceil(-(extent.ymin - tileInfo.origin.y) / tileHeight);
-
-    var extents = [];
-
-    if (!countOnly) {
-      for (var c=minCol; c < maxCol; c++) {
-        for (var r=minRow; r < maxRow; r++) {
-          extents.push({
-            xmin: tileInfo.origin.x + (c * tileWidth), 
-            ymin: tileInfo.origin.y - ((r+1) * tileHeight),
-            xmax: tileInfo.origin.x + ((c+1) * tileWidth), 
-            ymax: tileInfo.origin.y - (r * tileHeight),
-            row: r,
-            column: c
-          });
-        }
-      }
-    } else {
-      extents = {
-        bbox: {
-          xmin: tileInfo.origin.x + (minCol * tileWidth), 
-          ymin: tileInfo.origin.y - ((maxRow+1) * tileHeight),
-          xmax: tileInfo.origin.x + ((maxCol+1) * tileWidth), 
-          ymax: tileInfo.origin.y - (minRow * tileHeight)
-        },
-        rows: maxRow - minRow,
-        columns: maxCol - minCol,
-        count: (maxCol-minCol) * (maxRow-minRow)
-      };
-    }
-    tilesByZoomLevel[currentLOD.level] = extents;
-  }
-
-  return tilesByZoomLevel;
-}
-
-function getTileGraphicsForGeometry(targetGeom, zoomLevels) {
-  var def = new dojo.Deferred();
-
-  require(['esri/geometry/Extent', 'esri/graphic'], function (Extent, Graphic) {
-    getExtentsForGeometry(targetGeom, zoomLevels)
-      .then(function (tileExtents) {
-        var newGraphics = [],
-            count = 0;
-          
-        for (var zoomLevel in tileExtents) {
-          var extentsForZoom = tileExtents[zoomLevel];
-          console.log(extentsForZoom.length + ' tiles for zoom level ' + zoomLevel);
-          count += extentsForZoom.length;
-
-          for (var i=0; i<extentsForZoom.length; i++) {
-            var e = extentsForZoom[i],
-                tileExtent = new Extent(e.xmin, e.ymin, e.xmax, e.ymax, targetGeom.spatialReference),
-                tileGraphic = new Graphic(tileExtent, undefined, {
-                  row: e.row,
-                  column: e.column,
-                  zoom: zoomLevel
-                });
-            newGraphics.push(tileGraphic);
-          }
-        }
-
-        console.log(count + ' total tiles.');
-
-        def.resolve(newGraphics);
-      });
-  });
 
   return def;
 }

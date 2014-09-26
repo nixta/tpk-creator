@@ -23,6 +23,13 @@ function initializeUI() {
   $('#estimateButton').tooltip();
   $('#tpkButton').tooltip();
 
+  var $basemapDropdown = $('#basemapDropdown');
+  for (var basemapType in basemaps) {
+    var basemap = basemaps[basemapType],
+        $picker = $('<li role="presentation"><a role="menuitem" tabindex="-1" data-basemap="' + basemapType + '" href="#" onClick="changeBasemap()">' + basemap.name + '</a></li>');
+    $basemapDropdown.append($picker);
+  }
+
   var savedButtons = $.cookie('selectedLevels');
   if (savedButtons !== undefined) {
     for (var i=0; i<savedButtons.length; i++) {
@@ -31,9 +38,30 @@ function initializeUI() {
   }
 }
 
+function changeBasemap(a,b,c) {
+  __appState().map.setBasemap($(this.event.toElement).attr('data-basemap'));
+}
+
+function basemapChanged() {
+  var map = __appState().map,
+      newBasemap = map.getBasemap();
+  $('#basemapDropdown li').removeClass('active');
+  $('#basemapDropdown li a[data-basemap="' + newBasemap + '"]').parent().addClass('active');
+  $('#currentBasemap').text(basemaps[newBasemap].name);
+
+  var basemapTileInfo = getBasemapTileInfo();
+  $('#zoomLevels button').disable(true);
+
+  for (var i=0; i<basemapTileInfo.lods.length; i++) {
+    $('#zoomLevels button[data-zoom-level="' + basemapTileInfo.lods[i].level + '"]').disable(false);
+  }
+
+  showEstimatedTileCount();
+}
+
 function showEstimatedTileCount() {
-  var map = __appState().map;
-  var geomToEstimate = map.extent;
+  var map = __appState().map,
+      geomToEstimate = map.extent;
   var selected = getSelectedLevels();
   var currentTileCount = parseInt($('#zoomLevels').attr('data-tile-count'));
   getExtentCountsForGeometry(geomToEstimate, selected)
@@ -78,11 +106,12 @@ function estimateTPK() {
     return;
   }
 
-  var geomToEstimate = __appState().map.extent,
+  var basemapType = __appState().map.getBasemap(),
+      geomToEstimate = __appState().map.extent,
       levelsToUse = getSelectedLevels();
 
   // showTilesOnMap(geomToEstimate, levelsToUse);
-  makeEstimateRequest.bind(this)(geomToEstimate, levelsToUse);
+  makeEstimateRequest.bind(this)(basemapType, geomToEstimate, levelsToUse);
 }
 
 function getTPK() {
@@ -91,10 +120,11 @@ function getTPK() {
     return;
   }
 
-  var geom = __appState().map.extent,
+  var basemapType = __appState().map.getBasemap(),
+      geom = __appState().map.extent,
       levelsToUse = getSelectedLevels();
 
-  makeTpkRequest.bind(this)(geom, levelsToUse);
+  makeTpkRequest.bind(this)(basemapType, geom, levelsToUse);
 }
 
 function showTilesOnMap(geomToEstimate, levelsToUse) {
@@ -115,7 +145,7 @@ function showTilesOnMap(geomToEstimate, levelsToUse) {
     });
 }
 
-function makeEstimateRequest(geomToEstimate, levelsToUse) {
+function makeEstimateRequest(basemapType, geomToEstimate, levelsToUse) {
   console.log('Estimating for levels:');
   console.log(levelsToUse);
 
@@ -123,7 +153,7 @@ function makeEstimateRequest(geomToEstimate, levelsToUse) {
   var l = Ladda.create($('#estimateButton')[0]);
   l.start();
   $('#estimateButton').tooltip('hide');
-  requestTPKEstimate(geomToEstimate, levelsToUse)
+  requestTPKEstimate(basemapType, geomToEstimate, levelsToUse)
     .then(function gotEstimate(estimate) {
       console.log('Got estimate: ' + estimate.totalTilesToExport + ' tiles in ' + estimate.totalSize/1024/1024 + 'Mb');
       setTileSizeText(estimate.totalSize);
@@ -136,14 +166,14 @@ function makeEstimateRequest(geomToEstimate, levelsToUse) {
     });
 }
 
-function makeTpkRequest(geom, levelsToUse) {
+function makeTpkRequest(basemapType, geom, levelsToUse) {
   console.log('Generating TPK for levels:');
   console.log(levelsToUse);
 
   var l = Ladda.create($('#tpkButton')[0]);
   l.start();
   $('#tpkButton').tooltip('hide');
-  requestTPK(geom, levelsToUse)
+  requestTPK(basemapType, geom, levelsToUse)
     .then(function gotTpk(tpkUrl) {
       console.log('Got tpk: ' + tpkUrl);
       l.stop();
@@ -172,7 +202,7 @@ function setTileSizeText(size) {
 }
 
 function getSelectedLevels() {
-  return $.makeArray($('#zoomLevels button.active').map(function(i, v) { 
+  return $.makeArray($('#zoomLevels button.active:not([disabled])').map(function(i, v) { 
     return parseInt($(v).attr('data-zoom-level'));
   }));
 }
@@ -195,3 +225,11 @@ function setTpkButtonsEnabled() {
   $('#estimateButton').disable(disabled);
   $('#tpkButton').disable(disabled);
 }
+
+jQuery.fn.extend({
+    disable: function(state) {
+        return this.each(function() {
+            this.disabled = state;
+        });
+    }
+});

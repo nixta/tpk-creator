@@ -37,6 +37,10 @@
         background-color: orange;
       }
 
+      #zoomLevels > .btn.active:disabled {
+        background-color: rgb(173, 129, 48);
+      }
+
       #tpkSizeDisplay {
         margin-left: 10px);
       }
@@ -62,21 +66,23 @@
       .form-group.pull-right .btn {
         margin-right: 10px;
       }
+
+      #downloadTPK span {
+        margin-left: 5px;
+      }
     </style>
   </head>
   <body>
 
-    <div class="container main">
+    <div class="container-fluid main">
       
       <div class="row">
 
         <!-- Set extent and estimate size -->
-        <div class="col-sm-12">
-          <div class="panel panel-primary" id="lastPanel">
+        <div class="col-sm-12" style="padding:0px">
+          <div class="panel panel-primary" style="margin-bottom: 0px" id="lastPanel">
 
-            <div class="panel-heading">Tile Package Estimator
-              <span id="signInStatus" class="hidden-on-start"></span>
-
+            <div class="panel-heading text-center">Tile Package Estimator
               <button type="button" class="btn btn-info btn-xs pull-right hidden-on-start" onClick="doOAuth()" id="esriSignIn">authorize tile estimator</button>
 
               <div class="btn-group pull-right hidden-on-start" id="esriSignOut">
@@ -85,6 +91,15 @@
                 </button>
                 <ul class="dropdown-menu" role="menu">
                   <li><a href="#" onClick="signOut()">Sign out</a></li>
+                </ul>
+              </div>
+
+              <div class="dropdown pull-left">
+                <button class="btn btn-info btn-xs dropdown-toggle" type="button" id="basemapPicker" data-toggle="dropdown">
+                  <span id="currentBasemap"></span>
+                  <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" role="menu" aria-labelledby="basemapPicker" id="basemapDropdown">
                 </ul>
               </div>
             </div>
@@ -165,8 +180,6 @@
                             data-toggle="tooltip" data-container="body"
                             data-tile-count="0" data-zoom-level="19">19</button>
                     </div>
-                    <span id="tileCountDisplay"></span>
-                    <span id="tpkSizeDisplay"></span>
                   </div>
                 </div>
 
@@ -175,14 +188,19 @@
                     data-style="zoom-out"><span class="ladda-label">Estimate Size</span></button>
                     <button type="button" class="btn btn-primary ladda-button" disabled="true" id="tpkButton" onClick="getTPK()"
                     data-style="zoom-out"><span class="ladda-label">Get TPK</span></button>
-                    <a id="downloadTPK" class="btn btn-success hidden-on-start"
-                      data-toggle="tooltip" data-placement="top" title="Download TPK"
-                      href="http://tiledbasemaps.arcgis.com/arcgis/rest/directories/arcgisoutput/World_Topo_Map_MapServer/_agsLMapCacheL8112/Layers.tpk">
-                      <span class="glyphicon glyphicon-download-alt"></span>
-                    </a>
                 </div>
 
               </form>
+            </div>
+
+            <div class="panel-footer text-center">
+              <span id="tileCountDisplay"></span>
+              <span id="tpkSizeDisplay"></span>
+              <a id="downloadTPK" class="btn btn-xs btn-success hidden-on-start pull-right"
+                data-toggle="tooltip" data-placement="top" title="Download TPK"
+                href="http://tiledbasemaps.arcgis.com/arcgis/rest/directories/arcgisoutput/World_Topo_Map_MapServer/_agsLMapCacheL8112/Layers.tpk">
+                Download TPK<span class="glyphicon glyphicon-download-alt"></span>
+              </a>
             </div>
 
           </div>
@@ -206,6 +224,7 @@
     <script type="text/javascript" src="res/authenticate.js"></script>
     <script type="text/javascript" src="res/login.js"></script>
     <script type="text/javascript" src="res/map.js"></script>
+    <script type="text/javascript" src="res/tiles.js"></script>
     <script type="text/javascript" src="res/tpk.js"></script>
     <script type="text/javascript" src="res/ui.js"></script>
     <script type="text/javascript" src="res/app.js"></script>

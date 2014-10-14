@@ -15,34 +15,12 @@
   content: ')';
 }
 
-#zoomLevels {
-  margin-left: 5px;
-}
-
-#zoomLevels > .btn.active {
-  background-color: orange;
-}
-
-#zoomLevels > .btn.active:disabled {
-  background-color: rgb(173, 129, 48);
-}
-
 #tpkSizeDisplay {
   margin-left: 10px);
 }
 
 #tpkSizeDisplay.invalid {
   text-decoration: line-through;
-}
-
-#zoomLevels > .btn.current-zoom {
-  border-color: red;
-  border-width: 2px;
-  margin-top: -1px;
-}
-
-.panel-body {
-  padding-top: 0px;
 }
 
 .form-group:last-of-type {
@@ -94,6 +72,13 @@
   border-color: #676767;
 }
 
+#tpkPanel .panel-heading.interaction {
+  font-size: 28px;
+  font-weight: lighter;
+  padding-top: 0px;
+  padding-bottom: 0px;
+}
+
 #tpkInfo {
   background-color: transparent;
   border-color: transparent;
@@ -108,7 +93,6 @@
 }
 
 #zoomLevelsSlider {
-  margin-top: 15px;
   background: transparent;
 }
 

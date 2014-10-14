@@ -5,38 +5,57 @@ var detailLevels = [13,14,15,16],
     maxEstimateCount = 100000;
 
 function initializeUI() {
-
+  // Load stored zoom level range if need be
   var selectedLevels = $.cookie('selectedLevels'),
       rangeLimits = [];
   if (selectedLevels === undefined) {
-    selectedLevels = [13,14,15];
+    selectedLevels = midLevels;
   }
 
   __appState().selectedLevels = selectedLevels;
 
   rangeLimits = [selectedLevels[0],selectedLevels[selectedLevels.length-1]];
 
-  $('#zoomLevelsSlider').slider({
+  // Set up the jQuery UI zoom slider
+  $('#zoomLevelsSlider').dragslider({
     orientation: 'horizontal',
     range: true,
+    rangeDrag: true,
     min: 0,
     max: 19,
     step: 1,
     values: rangeLimits,
     start: function(e, ui) {
+      // When we start dragging any handle, show all tooltips
       $(ui.handle).siblings('.ui-slider-handle').addBack().tooltip('show');
     },
     stop: function (e, ui) {
+      // When we stop dragging any handle, hide all tooltips
       $(ui.handle).siblings('.ui-slider-handle').addBack().tooltip('hide');
     },
     slide: function(e, ui) {
-      $(ui.handle).attr('data-handle-slider-value', ui.value);
-      window.setTimeout(function () {
-        updateZoomLevels(e, ui);
-        $(ui.handle).tooltip('show');
-      }, 0);
+      if (ui.range) {
+        // Dragging the whole range.
+        $(ui.handles[0]).attr('data-handle-slider-value', ui.values[0]);
+        $(ui.handles[1]).attr('data-handle-slider-value', ui.values[1]);
+        window.setTimeout(function () {
+          // slide happens BEFORE the slider is updated, so we'll drop back into the event queue
+          updateZoomLevels(e, ui);
+          $(ui.handles[0]).tooltip('show');
+          $(ui.handles[1]).tooltip('show');
+        }, 0);        
+      } else {
+        // As we move things around, update the tooltip position.
+        $(ui.handle).attr('data-handle-slider-value', ui.value);
+        window.setTimeout(function () {
+          // slide happens BEFORE the slider is updated, so we'll drop back into the event queue
+          updateZoomLevels(e, ui);
+          $(ui.handle).tooltip('show');
+        }, 0);        
+      }
     },
     create: function (e, ui) {
+      // Attach Boostrap Tooltips to the slider handles
       $(e.target).find('.ui-slider-handle')
         .attr('data-toggle','tooltip')
         .tooltip({
@@ -56,6 +75,7 @@ function initializeUI() {
   $('#estimateButton').tooltip();
   $('#tpkButton').tooltip();
 
+  // Load up the basemap picker
   var $basemapDropdown = $('#basemapDropdown');
   for (var basemapType in basemaps) {
     var basemap = basemaps[basemapType],
@@ -66,18 +86,7 @@ function initializeUI() {
   showTPKInfo();
 }
 
-function updateZoomLevels(e, ui) {
-  saveSelectedLevels();
 
-  showTPKInfo();
-}
-
-function showTPKInfo() {
-  var zLevels = __appState().selectedLevels;
-  $('#zoomLevelsRange').text('Levels ' + zLevels[0] + '-' + zLevels[zLevels.length-1]);
-
-  showEstimatedTileCount();
-}
 
 function changeBasemap() {
   __appState().map.setBasemap($(this.event.toElement).attr('data-basemap'));
@@ -96,6 +105,22 @@ function basemapChanged() {
   for (var i=0; i<basemapTileInfo.lods.length; i++) {
     $('#zoomLevels button[data-zoom-level="' + basemapTileInfo.lods[i].level + '"]').disable(false);
   }
+
+  showEstimatedTileCount();
+
+  $.cookie('selectedBasemap', newBasemap, {expires: 365});
+}
+
+
+
+function updateZoomLevels(e, ui) {
+  saveSelectedLevels();
+  showTPKInfo();
+}
+
+function showTPKInfo() {
+  var zLevels = __appState().selectedLevels;
+  $('#zoomLevelsRange').text('Levels ' + zLevels[0] + '-' + zLevels[zLevels.length-1]);
 
   showEstimatedTileCount();
 }
@@ -131,17 +156,25 @@ function showEstimatedTileCount() {
   }
 }
 
+
+
 function showCurrentZoom() {
-  // $('#zoomLevels > button').removeClass('current-zoom');
-  // buttonForLevel(__appState().map.getZoom()).addClass('current-zoom');
+  console.log('Current map zoom: ' + __appState().map.getZoom());
 }
 
-// function buttonForLevel(level) {
-//   return $('#zoomLevels button[data-zoom-level="' + level + '"]');
-// }
 
-function invalidateEstimate() {
-  $('#tpkSizeDisplay').addClass('invalid');
+
+function getTPK() {
+  if (__appState().portalUser === undefined) {
+    alert('You must authorize the app!');
+    return;
+  }
+
+  var basemapType = __appState().map.getBasemap(),
+      geom = __appState().map.extent,
+      levelsToUse = getSelectedLevels();
+
+  makeTpkRequest.bind(this)(basemapType, geom, levelsToUse);
 }
 
 function estimateTPK() {
@@ -158,36 +191,10 @@ function estimateTPK() {
   makeEstimateRequest.bind(this)(basemapType, geomToEstimate, levelsToUse);
 }
 
-function getTPK() {
-  if (__appState().portalUser === undefined) {
-    alert('You must authorize the app!');
-    return;
-  }
-
-  var basemapType = __appState().map.getBasemap(),
-      geom = __appState().map.extent,
-      levelsToUse = getSelectedLevels();
-
-  makeTpkRequest.bind(this)(basemapType, geom, levelsToUse);
+function invalidateEstimate() {
+  $('#tpkSizeDisplay').addClass('invalid');
 }
 
-function showTilesOnMap(geomToEstimate, levelsToUse) {
-  getTileGraphicsForGeometry(geomToEstimate, levelsToUse)
-    .then(function (newGraphics) {
-      var tileDisplayLayer = __appState().tileDisplayLayer;
-      tileDisplayLayer.clear();
-
-      console.log('Got ' + newGraphics.length + ' graphics!');
-
-      if (newGraphics.length < 6000) {
-        for (var i=0; i<newGraphics.length; i++) {
-          tileDisplayLayer.add(newGraphics[i]);
-        }    
-      } else {
-        console.log('That\'s too many graphics to add. Won\'t bother');
-      }
-    });
-}
 
 function makeEstimateRequest(basemapType, geomToEstimate, levelsToUse) {
   console.log('Estimating for levels:');
@@ -246,16 +253,12 @@ function setTileSizeText(size) {
 }
 
 function getSelectedLevels() {
-  var range = $('#zoomLevelsSlider').slider('values'),
+  var range = $('#zoomLevelsSlider').dragslider('values'),
       values = [];
   for (var i = range[0]; i <= range[1]; i++) {
     values.push(i);
   }
   return values;
-}
-
-function loadSelectedLevels() {
-
 }
 
 function saveSelectedLevels() {
@@ -265,12 +268,30 @@ function saveSelectedLevels() {
 }
 
 function setTpkButtonsEnabled() {
-  var count = parseInt($('#zoomLevels').attr('data-tile-count'));
+  var count = parseInt($('#tpkInfo').attr('data-tile-count'));
   var disabled = (count === 0) ||
                  (count > maxEstimateCount) ||
                  (__appState().portalUser === undefined);
   $('#estimateButton').disable(disabled);
   $('#tpkButton').disable(disabled);
+}
+
+function showTilesOnMap(geomToEstimate, levelsToUse) {
+  getTileGraphicsForGeometry(geomToEstimate, levelsToUse)
+    .then(function (newGraphics) {
+      var tileDisplayLayer = __appState().tileDisplayLayer;
+      tileDisplayLayer.clear();
+
+      console.log('Got ' + newGraphics.length + ' graphics!');
+
+      if (newGraphics.length < 6000) {
+        for (var i=0; i<newGraphics.length; i++) {
+          tileDisplayLayer.add(newGraphics[i]);
+        }    
+      } else {
+        console.log('That\'s too many graphics to add. Won\'t bother');
+      }
+    });
 }
 
 jQuery.fn.extend({

@@ -1,15 +1,21 @@
 var maps = {};
 
+var defaultMapPosition = { center: [-122.45,37.77], zoom: 13 },
+    defaultBasemap = 'topo';
+
 function createMap(mapId, callback) {
   if (!maps.hasOwnProperty(mapId)) {
     require(["application/bootstrapmap", "dojo/domReady!"], 
       function(BootstrapMap) {
+        var basemap = $.cookie('selectedBasemap') || defaultBasemap,
+            mapPosition = $.cookie('mapPosition') || defaultMapPosition;
         // Get a reference to the ArcGIS Map class
         maps[mapId] = BootstrapMap.create(mapId,{
-          basemap:"topo",
-          center:[-122.45,37.77],
-          zoom:13,
-          scrollWheelZoom: false
+          basemap: basemap,
+          center: mapPosition.center,
+          zoom: mapPosition.zoom,
+          scrollWheelZoom: false,
+          showAttribution: true
         });
         callback(maps[mapId]);
     });
@@ -38,7 +44,14 @@ function initializeMap() {
       __appState().tileDisplayLayer = newLayer;
       theMap.addLayer(newLayer);
       theMap.on('load', function () {
-        theMap.on('extent-change', showEstimatedTileCount);
+        theMap.on('extent-change', function() {
+          showEstimatedTileCount();
+          var center = theMap.extent.getCenter();
+          $.cookie('mapPosition', {
+            center: [center.getLongitude(), center.getLatitude()],
+            zoom: theMap.getZoom()
+          });
+        });
         theMap.on('basemap-change', basemapChanged);
         basemapChanged();
         showCurrentZoom();

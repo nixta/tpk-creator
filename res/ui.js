@@ -5,6 +5,25 @@ var detailLevels = [13,14,15,16],
     maxEstimateCount = 100000;
 
 function initializeUI() {
+  initializeRangeSlider();
+
+  $('#estimateButton').tooltip();
+  $('#tpkButton').tooltip();
+
+  // Load up the basemap picker
+  var $basemapDropdown = $('#basemapDropdown');
+  for (var basemapType in basemaps) {
+    var basemap = basemaps[basemapType],
+        $picker = $('<li role="presentation"><a role="menuitem" tabindex="-1" data-basemap="' + basemapType + '" href="#" onClick="changeBasemap()">' + basemap.name + '</a></li>');
+    $basemapDropdown.append($picker);
+  }
+
+  showTPKInfo();
+}
+
+
+/// Range selection
+function initializeRangeSlider() {
   // Load stored zoom level range if need be
   var selectedLevels = $.cookie('selectedLevels'),
       rangeLimits = [];
@@ -26,68 +45,68 @@ function initializeUI() {
     step: 1,
     values: rangeLimits,
     start: function(e, ui) {
-      // When we start dragging any handle, show all tooltips
-      $(ui.handle).siblings('.ui-slider-handle').addBack().tooltip('show');
+      // When we start dragging any handle, show selected range
+      showInteractionHeading();
     },
     stop: function (e, ui) {
-      // When we stop dragging any handle, hide all tooltips
-      $(ui.handle).siblings('.ui-slider-handle').addBack().tooltip('hide');
+      // When we stop dragging any handle, hide selected range
+      hideInteractionHeading();
     },
     slide: function(e, ui) {
       if (ui.range) {
         // Dragging the whole range.
-        $(ui.handles[0]).attr('data-handle-slider-value', ui.values[0]);
-        $(ui.handles[1]).attr('data-handle-slider-value', ui.values[1]);
         window.setTimeout(function () {
           // slide happens BEFORE the slider is updated, so we'll drop back into the event queue
           updateZoomLevels(e, ui);
-          $(ui.handles[0]).tooltip('show');
-          $(ui.handles[1]).tooltip('show');
         }, 0);        
       } else {
-        // As we move things around, update the tooltip position.
-        $(ui.handle).attr('data-handle-slider-value', ui.value);
+        // As we move things around, update the selected range.
         window.setTimeout(function () {
           // slide happens BEFORE the slider is updated, so we'll drop back into the event queue
           updateZoomLevels(e, ui);
-          $(ui.handle).tooltip('show');
         }, 0);        
       }
-    },
-    create: function (e, ui) {
-      // Attach Boostrap Tooltips to the slider handles
-      $(e.target).find('.ui-slider-handle')
-        .attr('data-toggle','tooltip')
-        .tooltip({
-          animation: false,
-          container: 'body',
-          placement: function() {
-            return this.$element.index('.ui-slider-handle') === 0?'top':'bottom';
-          },
-          trigger: 'manual',
-          title: function () {
-            return $(this).attr('data-handle-slider-value');
-          }
-        });
     }
   });
+}
 
-  $('#estimateButton').tooltip();
-  $('#tpkButton').tooltip();
+function showInteractionHeading() {
+  setPanelHeading(true);
+}
 
-  // Load up the basemap picker
-  var $basemapDropdown = $('#basemapDropdown');
-  for (var basemapType in basemaps) {
-    var basemap = basemaps[basemapType],
-        $picker = $('<li role="presentation"><a role="menuitem" tabindex="-1" data-basemap="' + basemapType + '" href="#" onClick="changeBasemap()">' + basemap.name + '</a></li>');
-    $basemapDropdown.append($picker);
-  }
+function hideInteractionHeading() {
+  setPanelHeading(false);
+}
 
-  showTPKInfo();
+function setPanelHeading(showInteraction) {
+  var $defaultPanel     = $('#tpkPanel .panel-heading.default'),
+      $interactionPanel = $('#tpkPanel .panel-heading.interaction'),
+      $panelToShow      = showInteraction?$interactionPanel:$defaultPanel,
+      $panelToHide      = showInteraction?$defaultPanel:$interactionPanel;
+
+  // jQuery Queues. Oh yeah! So, if I just tap on the slider, I might try
+  // to initiate a fade-out animation on the interaction panel while it's still
+  // fading in. By putting everything on the same queue, and only progressing the
+  // queue when our pair of fade-in + fade-out animations have completed, we
+  // ensure that even a fade-out during a fade-in will wait its turn.
+  $('#tpkPanel').queue(function() {
+    $panelToHide.fadeOut({
+      duration: 'fast',
+      complete: function () {
+        $panelToShow.fadeIn({
+          duration: 'fast',
+          complete: function() {
+            // Now allow any waiting fade-out/in pair to go ahead.
+            $('#tpkPanel').dequeue();
+          }
+        });
+      }
+    });
+  });
 }
 
 
-
+/// Basemap Picker
 function changeBasemap() {
   __appState().map.setBasemap($(this.event.toElement).attr('data-basemap'));
 }
@@ -112,15 +131,13 @@ function basemapChanged() {
 }
 
 
-
-function updateZoomLevels(e, ui) {
-  saveSelectedLevels();
-  showTPKInfo();
-}
-
+/// TPK Feedback and calculations
 function showTPKInfo() {
-  var zLevels = __appState().selectedLevels;
-  $('#zoomLevelsRange').text('Levels ' + zLevels[0] + '-' + zLevels[zLevels.length-1]);
+  var zLevels = __appState().selectedLevels,
+      rangeString = zLevels[0] + ' - ' + zLevels[zLevels.length-1];
+  $('#zoomLevelsRange').text('Levels ' + rangeString);
+
+  $('#tpkPanel .panel-heading.interaction span').text(rangeString);
 
   showEstimatedTileCount();
 }
@@ -156,27 +173,31 @@ function showEstimatedTileCount() {
   }
 }
 
+function setTpkButtonsEnabled() {
+  var count = parseInt($('#tpkInfo').attr('data-tile-count'));
+  var disabled = (count === 0) ||
+                 (count > maxEstimateCount) ||
+                 (__appState().portalUser === undefined);
+  $('#estimateButton').disable(disabled);
+  $('#tpkButton').disable(disabled);
+}
 
+
+
+/// Handle zoom change
+function updateZoomLevels(e, ui) {
+  saveSelectedLevels();
+  showTPKInfo();
+}
 
 function showCurrentZoom() {
+  // Placeholder
   console.log('Current map zoom: ' + __appState().map.getZoom());
 }
 
 
 
-function getTPK() {
-  if (__appState().portalUser === undefined) {
-    alert('You must authorize the app!');
-    return;
-  }
-
-  var basemapType = __appState().map.getBasemap(),
-      geom = __appState().map.extent,
-      levelsToUse = getSelectedLevels();
-
-  makeTpkRequest.bind(this)(basemapType, geom, levelsToUse);
-}
-
+/// Estimating TPKs
 function estimateTPK() {
   if (__appState().portalUser === undefined) {
     alert('You must authorize the app!');
@@ -194,7 +215,6 @@ function estimateTPK() {
 function invalidateEstimate() {
   $('#tpkSizeDisplay').addClass('invalid');
 }
-
 
 function makeEstimateRequest(basemapType, geomToEstimate, levelsToUse) {
   console.log('Estimating for levels:');
@@ -217,6 +237,38 @@ function makeEstimateRequest(basemapType, geomToEstimate, levelsToUse) {
     });
 }
 
+function setTileSizeText(size) {
+  var str = '';
+  if ({}.toString.call(size) === '[object String]') {
+    str = size;
+  } else if (size === -1) {
+    str = 'Calculating size...';
+  } else {
+    str = (Math.round(1000*(size/1024/1024))/1000) + 'Mb';
+  }
+  if (str !== '') {
+    str = '(' + str + ')';
+  }
+  $('#tpkSizeDisplay').text(str);
+  $('#tpkSizeDisplay').removeClass('invalid');
+}
+
+
+
+/// Creating TPKs
+function getTPK() {
+  if (__appState().portalUser === undefined) {
+    alert('You must authorize the app!');
+    return;
+  }
+
+  var basemapType = __appState().map.getBasemap(),
+      geom = __appState().map.extent,
+      levelsToUse = getSelectedLevels();
+
+  makeTpkRequest.bind(this)(basemapType, geom, levelsToUse);
+}
+
 function makeTpkRequest(basemapType, geom, levelsToUse) {
   console.log('Generating TPK for levels:');
   console.log(levelsToUse);
@@ -236,22 +288,9 @@ function makeTpkRequest(basemapType, geom, levelsToUse) {
     });
 }
 
-function setTileSizeText(size) {
-  var str = '';
-  if ({}.toString.call(size) === '[object String]') {
-    str = size;
-  } else if (size === -1) {
-    str = 'Calculating size...';
-  } else {
-    str = (Math.round(1000*(size/1024/1024))/1000) + 'Mb';
-  }
-  if (str !== '') {
-    str = '(' + str + ')';
-  }
-  $('#tpkSizeDisplay').text(str);
-  $('#tpkSizeDisplay').removeClass('invalid');
-}
 
+
+/// Selected Levels
 function getSelectedLevels() {
   var range = $('#zoomLevelsSlider').dragslider('values'),
       values = [];
@@ -267,15 +306,15 @@ function saveSelectedLevels() {
   showEstimatedTileCount();
 }
 
-function setTpkButtonsEnabled() {
-  var count = parseInt($('#tpkInfo').attr('data-tile-count'));
-  var disabled = (count === 0) ||
-                 (count > maxEstimateCount) ||
-                 (__appState().portalUser === undefined);
-  $('#estimateButton').disable(disabled);
-  $('#tpkButton').disable(disabled);
+
+function showTiles() {
+  var ext = __appState().map.extent,
+      lods = getSelectedLevels();
+  showTilesOnMap(ext, lods);
 }
 
+
+/// Visual Feedback
 function showTilesOnMap(geomToEstimate, levelsToUse) {
   getTileGraphicsForGeometry(geomToEstimate, levelsToUse)
     .then(function (newGraphics) {
@@ -294,6 +333,9 @@ function showTilesOnMap(geomToEstimate, levelsToUse) {
     });
 }
 
+
+
+/// jQuery shortcut for disabling elements
 jQuery.fn.extend({
     disable: function(state) {
         return this.each(function() {

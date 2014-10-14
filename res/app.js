@@ -1,7 +1,7 @@
 $(document).ready(function () {
   $.cookie.json = true;
 
-  $('body').data('esri-gnip-translator', {
+  $('body').data('esri-tpk-generator', {
     clientId: 'ycUvqwhnMGffespX',
     jobs: {}
   });
@@ -12,5 +12,5 @@ $(document).ready(function () {
 });
 
 function __appState() {
-  return $('body').data('esri-gnip-translator');
+  return $('body').data('esri-tpk-generator');
 }

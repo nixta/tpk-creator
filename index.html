@@ -11,149 +11,79 @@
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="//js.arcgis.com/3.10/js/esri/css/esri.css">   
     <link rel="stylesheet" type="text/css" href="//esri.github.io/bootstrap-map-js/src/css/bootstrapmap.css">
+    <link rel="stylesheet" type="text/css" href="//code.jquery.com/ui/1.11.1/themes/redmond/jquery-ui.css">
 
     <link rel="stylesheet" type="text/css" href="res/ladda-themeless.min.css">
     <link rel="stylesheet" type="text/css" href="res/app.css">
   </head>
   <body>
+    <div class="panel panel-primary panel-fixed hidden-on-start" id="tpkPanel">
 
-    <div class="container-fluid main">
-      
-      <div class="row">
-
-        <!-- Set extent and estimate size -->
-        <div class="col-sm-12" style="padding:0px">
-          <div class="panel panel-primary" style="margin-bottom: 0px" id="lastPanel">
-
-            <div class="panel-heading text-center">Tile Package Estimator
-              <button type="button" class="btn btn-info btn-xs pull-right hidden-on-start" onClick="doOAuth()" id="esriSignIn">authorize tile estimator</button>
-
-              <div class="btn-group pull-right hidden-on-start" id="esriSignOut">
-                <button class="btn btn-info btn-xs"><span id="esriUsername"></span></button>
-                <button class="btn btn-info btn-xs dropdown-toggle" type="button" data-toggle="dropdown"><span class="caret"></span>
-                </button>
-                <ul class="dropdown-menu" role="menu">
-                  <li><a href="#" onClick="signOut()">Sign out</a></li>
-                </ul>
-              </div>
-
-              <div class="dropdown pull-left">
-                <button class="btn btn-info btn-xs dropdown-toggle" type="button" id="basemapPicker" data-toggle="dropdown">
-                  <span id="currentBasemap"></span>
-                  <span class="caret"></span>
-                </button>
-                <ul class="dropdown-menu" role="menu" aria-labelledby="basemapPicker" id="basemapDropdown">
-                </ul>
-              </div>
-            </div>
-
-            <div class="panel-body">
-              <form id="extentForm" class="form-horizontal" method="post"
-                data-bv-message="This value is not valid"
-                data-bv-live="disabled"
-                >
-
-                <div class="form-group">
-                  <div id="extentMap" class="result-map"></div>
-                </div>
-
-                <div class="form-group">
-                  <div class="col-sm-12">
-                    Levels: 
-                    <div class="btn-group" data-toggle="buttons-checkbox" id="zoomLevels"
-                      data-tile-count="0">
-                        <button type="button" class="btn btn-xs btn-primary" 
-                            data-toggle="tooltip"
-                            data-tile-count="0" data-zoom-level="0">0</button>
-                        <button type="button" class="btn btn-xs btn-primary" 
-                            data-toggle="tooltip"
-                            data-tile-count="0" data-zoom-level="1">1</button>
-                        <button type="button" class="btn btn-xs btn-primary" 
-                            data-toggle="tooltip"
-                            data-tile-count="0" data-zoom-level="2">2</button>
-                        <button type="button" class="btn btn-xs btn-primary" 
-                            data-toggle="tooltip"
-                            data-tile-count="0" data-zoom-level="3">3</button>
-                        <button type="button" class="btn btn-xs btn-primary" 
-                            data-toggle="tooltip"
-                            data-tile-count="0" data-zoom-level="4">4</button>
-                        <button type="button" class="btn btn-xs btn-primary" 
-                            data-toggle="tooltip"
-                            data-tile-count="0" data-zoom-level="5">5</button>
-                        <button type="button" class="btn btn-xs btn-primary" 
-                            data-toggle="tooltip"
-                            data-tile-count="0" data-zoom-level="6">6</button>
-                        <button type="button" class="btn btn-xs btn-primary" 
-                            data-toggle="tooltip"
-                            data-tile-count="0" data-zoom-level="7">7</button>
-                        <button type="button" class="btn btn-xs btn-primary" 
-                            data-toggle="tooltip"
-                            data-tile-count="0" data-zoom-level="8">8</button>
-                        <button type="button" class="btn btn-xs btn-primary" 
-                            data-toggle="tooltip"
-                            data-tile-count="0" data-zoom-level="9">9</button>
-                        <button type="button" class="btn btn-xs btn-primary" 
-                            data-toggle="tooltip"
-                            data-tile-count="0" data-zoom-level="10">10</button>
-                        <button type="button" class="btn btn-xs btn-primary" 
-                            data-toggle="tooltip"
-                            data-tile-count="0" data-zoom-level="11">11</button>
-                        <button type="button" class="btn btn-xs btn-primary" 
-                            data-toggle="tooltip"
-                            data-tile-count="0" data-zoom-level="12">12</button>
-                        <button type="button" class="btn btn-xs btn-primary" 
-                            data-toggle="tooltip"
-                            data-tile-count="0" data-zoom-level="13">13</button>
-                        <button type="button" class="btn btn-xs btn-primary" 
-                            data-toggle="tooltip"
-                            data-tile-count="0" data-zoom-level="14">14</button>
-                        <button type="button" class="btn btn-xs btn-primary" 
-                            data-toggle="tooltip"
-                            data-tile-count="0" data-zoom-level="15">15</button>
-                        <button type="button" class="btn btn-xs btn-primary" 
-                            data-toggle="tooltip"
-                            data-tile-count="0" data-zoom-level="16">16</button>
-                        <button type="button" class="btn btn-xs btn-primary" 
-                            data-toggle="tooltip"
-                            data-tile-count="0" data-zoom-level="17">17</button>
-                        <button type="button" class="btn btn-xs btn-primary" 
-                            data-toggle="tooltip"
-                            data-tile-count="0" data-zoom-level="18">18</button>
-                        <button type="button" class="btn btn-xs btn-primary" 
-                            data-toggle="tooltip" data-container="body"
-                            data-tile-count="0" data-zoom-level="19">19</button>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="form-group pull-right">
-                    <button type="button" class="btn btn-primary ladda-button" disabled="true" id="estimateButton" onClick="estimateTPK()"
-                    data-style="zoom-out"><span class="ladda-label">Estimate Size</span></button>
-                    <button type="button" class="btn btn-primary ladda-button" disabled="true" id="tpkButton" onClick="getTPK()"
-                    data-style="zoom-out"><span class="ladda-label">Get TPK</span></button>
-                </div>
-
-              </form>
-            </div>
-
-            <div class="panel-footer text-center">
-              <span id="tileCountDisplay"></span>
-              <span id="tpkSizeDisplay"></span>
-              <a id="downloadTPK" class="btn btn-xs btn-success hidden-on-start pull-right"
-                data-toggle="tooltip" data-placement="top" title="Download TPK"
-                href="http://tiledbasemaps.arcgis.com/arcgis/rest/directories/arcgisoutput/World_Topo_Map_MapServer/_agsLMapCacheL8112/Layers.tpk">
-                Download TPK<span class="glyphicon glyphicon-download-alt"></span>
-              </a>
-            </div>
-
-          </div>
+      <div class="panel-heading text-left"><span id="instructions">Tile Package Magic</span>
+        <div class="btn-group pull-right hidden-xs" id="esriSignOut">
+          <button class="btn btn-default btn-xs"><span id="esriUsername"></span></button>
+          <button class="btn btn-default btn-xs dropdown-toggle" type="button" data-toggle="dropdown"><span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu" role="menu">
+            <li><a href="#" onClick="signOut()">Sign out</a></li>
+          </ul>
         </div>
 
+        <div class="btn-group pull-right visible-xs-block" id="esriSignOutSmall">
+          <button class="btn btn-default btn-xs dropdown-toggle" type="button" data-toggle="dropdown"><span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu" role="menu">
+            <li><a href="#" onClick="signOut()">Sign out</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="panel-body">
+        <form id="extentForm" class="form-horizontal" method="post"
+          data-bv-message="This value is not valid"
+          data-bv-live="disabled">
+
+          <div class="form-group">
+            <div class="col-sm-12">
+              <div id="zoomLevelsSlider"></div>
+            </div>
+          </div>
+
+          <div class="well" id="tpkInfo">
+            <span id="zoomLevelsRange"></span><span id="tileCountDisplay"></span><br/><span id="tpkSizeDisplay"></span>
+          </div>
+
+          <div class="form-group">
+              <button type="button" class="btn btn-xs btn-default ladda-button" disabled="true" id="estimateButton" onClick="estimateTPK()"
+              data-style="zoom-out" data-spinner-color="#656565"><span class="ladda-label">Estimate Size</span></button>
+              <button type="button" class="btn btn-xs btn-default ladda-button" disabled="true" id="tpkButton" onClick="getTPK()"
+              data-style="zoom-out" data-spinner-color="#656565"><span class="ladda-label">Create TPK</span></button>
+              <a id="downloadTPK" class="btn btn-xs btn-success"
+                data-toggle="tooltip" data-placement="top" title="Download TPK"
+                href="javascript:alert('Something went wrong!');"><span class="hidden-xs">Download TPK</span><span class="glyphicon glyphicon-cloud-download"></span>
+              </a>
+          </div>
+        </form>
       </div>
 
     </div>
 
+    <div class="dropdown" id="basemapPickerContainer">
+      <button class="btn btn-info dropdown-toggle" type="button" id="basemapPicker" data-toggle="dropdown">
+        <span class="glyphicon glyphicon-globe" id="basemapPickerLabel"></span>
+      </button>
+      <ul class="dropdown-menu dropdown-menu-left" role="menu" aria-labelledby="basemapPicker" id="basemapDropdown">
+      </ul>
+    </div>
+
+    <button type="button" class="btn btn-info pull-right hidden-on-start" onClick="doOAuth()" id="esriSignIn">Sign In for TPK Magic&#8230;</button>
+
+    <div id="extentMap" class="result-map"></div>
+
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
+    <script type="text/javascript" src="//code.jquery.com/ui/1.11.1/jquery-ui.min.js"></script>
+    <script src="res/jquery.ui.touch-punch.min.js"></script>
+
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 
     <script type="text/javascript" src="res/jquery.cookie.js"></script>

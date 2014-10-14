@@ -1,7 +1,8 @@
 var signInStatus = '#signInStatus',
     signInButton = '#esriSignIn',
-    signOutButton = '#esriSignOut',
-    signOutLabel = '#esriUsername';
+    // signOutButton = '#esriSignOut',
+    signOutLabel = '#esriUsername',
+    tpkPanel = '#tpkPanel';
 
 function setUILoggedIn() {
   require(['esri/arcgis/Portal'], function (arcgisPortal) {
@@ -10,7 +11,8 @@ function setUILoggedIn() {
         __appState().portalUser = portalUser;
         $(signOutLabel).text(portalUser.username);
         $(signInButton).fadeOut('fast', function () {
-          $(signOutButton).fadeIn('slow');
+          $(tpkPanel).fadeIn('slow');
+          // $(signOutButton).fadeIn('slow');
         });
         setTpkButtonsEnabled();
       }
@@ -24,7 +26,7 @@ function setUILoggedIn() {
 }
 
 function setUILoggedOut() {
-  $(signOutButton).fadeOut('fast', function() {
+  $(tpkPanel).fadeOut('fast', function() {
     $(signInButton).fadeIn('slow');
   });
   setTpkButtonsEnabled();

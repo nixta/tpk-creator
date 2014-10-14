@@ -5,19 +5,52 @@ var detailLevels = [13,14,15,16],
     maxEstimateCount = 100000;
 
 function initializeUI() {
-  $('#zoomLevels button').on('click', function () {
-    $(this).tooltip('hide');
-    saveSelectedLevels(this);
-    invalidateEstimate();
-  });
 
-  $('#zoomLevels button').tooltip({
-    title: function() {
-      var c = $(this).attr('data-tile-count'),
-          p = parseInt(c) === 1?'':'s';
-      return c + ' tile' + p;
+  var selectedLevels = $.cookie('selectedLevels'),
+      rangeLimits = [];
+  if (selectedLevels === undefined) {
+    selectedLevels = [13,14,15];
+  }
+
+  __appState().selectedLevels = selectedLevels;
+
+  rangeLimits = [selectedLevels[0],selectedLevels[selectedLevels.length-1]];
+
+  $('#zoomLevelsSlider').slider({
+    orientation: 'horizontal',
+    range: true,
+    min: 0,
+    max: 19,
+    step: 1,
+    values: rangeLimits,
+    start: function(e, ui) {
+      $(ui.handle).siblings('.ui-slider-handle').addBack().tooltip('show');
     },
-    placement: 'top'
+    stop: function (e, ui) {
+      $(ui.handle).siblings('.ui-slider-handle').addBack().tooltip('hide');
+    },
+    slide: function(e, ui) {
+      $(ui.handle).attr('data-handle-slider-value', ui.value);
+      window.setTimeout(function () {
+        updateZoomLevels(e, ui);
+        $(ui.handle).tooltip('show');
+      }, 0);
+    },
+    create: function (e, ui) {
+      $(e.target).find('.ui-slider-handle')
+        .attr('data-toggle','tooltip')
+        .tooltip({
+          animation: false,
+          container: 'body',
+          placement: function() {
+            return this.$element.index('.ui-slider-handle') === 0?'top':'bottom';
+          },
+          trigger: 'manual',
+          title: function () {
+            return $(this).attr('data-handle-slider-value');
+          }
+        });
+    }
   });
 
   $('#estimateButton').tooltip();
@@ -30,15 +63,23 @@ function initializeUI() {
     $basemapDropdown.append($picker);
   }
 
-  var savedButtons = $.cookie('selectedLevels');
-  if (savedButtons !== undefined) {
-    for (var i=0; i<savedButtons.length; i++) {
-      buttonForLevel(savedButtons[i]).addClass('active');
-    }
-  }
+  showTPKInfo();
 }
 
-function changeBasemap(a,b,c) {
+function updateZoomLevels(e, ui) {
+  saveSelectedLevels();
+
+  showTPKInfo();
+}
+
+function showTPKInfo() {
+  var zLevels = __appState().selectedLevels;
+  $('#zoomLevelsRange').text('Levels ' + zLevels[0] + '-' + zLevels[zLevels.length-1]);
+
+  showEstimatedTileCount();
+}
+
+function changeBasemap() {
   __appState().map.setBasemap($(this.event.toElement).attr('data-basemap'));
 }
 
@@ -60,41 +101,44 @@ function basemapChanged() {
 }
 
 function showEstimatedTileCount() {
-  var map = __appState().map,
-      geomToEstimate = map.extent;
-  var selected = getSelectedLevels();
-  var currentTileCount = parseInt($('#zoomLevels').attr('data-tile-count'));
-  getExtentCountsForGeometry(geomToEstimate, selected)
-    .then(function (tileExtents) {
-      var count = 0;
-      $('#zoomLevels button').attr('data-tile-count', 0);
+  var map = __appState().map;
+  if (map) {
+    var geomToEstimate = map.extent,
+        selected = getSelectedLevels(),
+        currentTileCount = parseInt($('#tpkInfo').attr('data-tile-count'));
+        
+    getExtentCountsForGeometry(geomToEstimate, selected)
+      .then(function (tileExtents) {
+        var count = 0;
 
-      for (var zoomLevel in tileExtents) {
-        var tileCountForZoomLevel = tileExtents[zoomLevel].count;
-        buttonForLevel(zoomLevel).attr('data-tile-count', tileCountForZoomLevel);
-        count += tileCountForZoomLevel;
-      }
+        for (var zoomLevel in tileExtents) {
+          var tileCountForZoomLevel = tileExtents[zoomLevel].count;
+          count += tileCountForZoomLevel;
+        }
 
-      if (count !== currentTileCount) {
-        invalidateEstimate();
-      }
+        if (count !== currentTileCount) {
+          invalidateEstimate();
+        }
 
-      $('#zoomLevels').attr('data-tile-count', count);
-      
-      var countStr = (''+count).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-      $('#tileCountDisplay').text(countStr + ' tile' + (count!==1?'s':''));
-      setTpkButtonsEnabled();
-    });
+        $('#tpkInfo').attr('data-tile-count', count);
+        
+        var countStr = (''+count).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        $('#tileCountDisplay').text(countStr + ' tile' + (count!==1?'s':''));
+        setTpkButtonsEnabled();
+      });
+  } else {
+    $('#tileCountDisplay').text('Waiting for map to load...');
+  }
 }
 
 function showCurrentZoom() {
-  $('#zoomLevels > button').removeClass('current-zoom');
-  buttonForLevel(__appState().map.getZoom()).addClass('current-zoom');
+  // $('#zoomLevels > button').removeClass('current-zoom');
+  // buttonForLevel(__appState().map.getZoom()).addClass('current-zoom');
 }
 
-function buttonForLevel(level) {
-  return $('#zoomLevels button[data-zoom-level="' + level + '"]');
-}
+// function buttonForLevel(level) {
+//   return $('#zoomLevels button[data-zoom-level="' + level + '"]');
+// }
 
 function invalidateEstimate() {
   $('#tpkSizeDisplay').addClass('invalid');
@@ -202,19 +246,22 @@ function setTileSizeText(size) {
 }
 
 function getSelectedLevels() {
-  return $.makeArray($('#zoomLevels button.active:not([disabled])').map(function(i, v) { 
-    return parseInt($(v).attr('data-zoom-level'));
-  }));
+  var range = $('#zoomLevelsSlider').slider('values'),
+      values = [];
+  for (var i = range[0]; i <= range[1]; i++) {
+    values.push(i);
+  }
+  return values;
 }
 
-function saveSelectedLevels(clickedButton) {
-  window.setTimeout(function () {
-    var selected = getSelectedLevels();
-    $.cookie('selectedLevels', selected, {expires: 365});
-    showEstimatedTileCount();
-    $(clickedButton).tooltip('show');
-  }, 100);
-  $(this).blur();
+function loadSelectedLevels() {
+
+}
+
+function saveSelectedLevels() {
+  var selected = __appState().selectedLevels = getSelectedLevels();
+  $.cookie('selectedLevels', selected, {expires: 365});
+  showEstimatedTileCount();
 }
 
 function setTpkButtonsEnabled() {

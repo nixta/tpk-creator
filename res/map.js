@@ -42,6 +42,7 @@ function initializeMap() {
         theMap.on('basemap-change', basemapChanged);
         basemapChanged();
         showCurrentZoom();
+        showTPKInfo();
       });
       theMap.on('zoom-end', showCurrentZoom);
     });

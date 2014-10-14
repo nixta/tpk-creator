@@ -226,7 +226,7 @@ function makeEstimateRequest(basemapType, geomToEstimate, levelsToUse) {
   $('#estimateButton').tooltip('hide');
   requestTPKEstimate(basemapType, geomToEstimate, levelsToUse)
     .then(function gotEstimate(estimate) {
-      console.log('Got estimate: ' + estimate.totalTilesToExport + ' tiles in ' + estimate.totalSize/1024/1024 + 'Mb');
+      console.log('Got estimate: ' + estimate.totalTilesToExport + ' tiles in ' + estimate.totalSize/1024/1024 + 'MB');
       setTileSizeText(estimate.totalSize);
       l.stop();
     }, function estimateFailed(err) {
@@ -244,7 +244,7 @@ function setTileSizeText(size) {
   } else if (size === -1) {
     str = 'Calculating size...';
   } else {
-    str = (Math.round(1000*(size/1024/1024))/1000) + 'Mb';
+    str = (Math.round(1000*(size/1024/1024))/1000) + 'MB';
   }
   if (str !== '') {
     str = '(' + str + ')';

@@ -1,6 +1,6 @@
 #TPK Size Estimator
 
-Visit at [http://nixta.github.io/extent-estimator](http://nixta.github.io/extent-estimator).
+Visit at [http://nixta.github.io/tpk-creator](http://nixta.github.io/tpk-creator).
 
 Select zoom levels, and set the maps extent to see tile counts. If the count is less than 100,000 (the ArcGIS Online TPK generation limit), you can click `Estimate Size` to request the size of the TPK.
 

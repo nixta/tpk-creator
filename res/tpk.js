@@ -9,7 +9,7 @@ var basemaps = {
     basicURL: 'http://services.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer',
     tilePackageURL: 'http://tiledbasemaps.arcgis.com/arcgis/rest/services/World_Street_Map/MapServer'
   },
-  "national-geographic": {
+  'national-geographic': {
     name: 'National Geographic',
     basicURL: 'http://services.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer',
     tilePackageURL: 'http://tiledbasemaps.arcgis.com/arcgis/rest/services/NatGeo_World_Map/MapServer'
@@ -28,6 +28,11 @@ var basemaps = {
     name: 'Light Gray Canvas',
     basicURL: 'http://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Light_Gray_Base/MapServer',
     tilePackageURL: 'http://tiledbasemaps.arcgis.com/arcgis/rest/services/Canvas/World_Light_Gray_Base/MapServer'
+  },
+  'dark-gray': {
+    name: 'Dark Gray Canvas',
+    basicURL: 'http://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Base/MapServer',
+    tilePackageURL: 'http://tiledbasemaps.arcgis.com/arcgis/rest/services/Canvas/World_Dark_Gray_Base/MapServer'
   }
 };
 

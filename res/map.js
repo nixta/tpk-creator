@@ -33,8 +33,9 @@ function initializeMap() {
              'esri/symbols/SimpleLineSymbol', 
              'esri/symbols/SimpleFillSymbol', 
              'esri/renderers/SimpleRenderer',
+             "esri/dijit/Search",
              'esri/Color'], 
-      function (GraphicsLayer, SimpleLineSymbol, SimpleFillSymbol, SimpleRenderer, Color) {
+      function (GraphicsLayer, SimpleLineSymbol, SimpleFillSymbol, SimpleRenderer, Search, Color) {
       var newLayer = new GraphicsLayer(),
           tileOutline = new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color([255,0,0,0.5]), 0.5),
           tileFill = new SimpleFillSymbol(SimpleFillSymbol.STYLE_NULL,
@@ -57,6 +58,12 @@ function initializeMap() {
         showCurrentZoom();
         showTPKInfo();
       });
+
+      var s = new Search({
+        map: theMap
+      }, "search");
+      s.startup();
+
       theMap.on('zoom-end', showCurrentZoom);
     });
   });

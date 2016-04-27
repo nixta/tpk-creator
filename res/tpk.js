@@ -1,38 +1,38 @@
 var basemaps = {
   topo: {
     name: 'Topographic',
-    basicURL: 'http://services.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer',
-    tilePackageURL: 'http://tiledbasemaps.arcgis.com/arcgis/rest/services/World_Topo_Map/MapServer'
+    basicURL: '//services.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer',
+    tilePackageURL: '//tiledbasemaps.arcgis.com/arcgis/rest/services/World_Topo_Map/MapServer'
   },
   streets: {
     name: 'World Streets',
-    basicURL: 'http://services.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer',
-    tilePackageURL: 'http://tiledbasemaps.arcgis.com/arcgis/rest/services/World_Street_Map/MapServer'
+    basicURL: '//services.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer',
+    tilePackageURL: '//tiledbasemaps.arcgis.com/arcgis/rest/services/World_Street_Map/MapServer'
   },
   'national-geographic': {
     name: 'National Geographic',
-    basicURL: 'http://services.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer',
-    tilePackageURL: 'http://tiledbasemaps.arcgis.com/arcgis/rest/services/NatGeo_World_Map/MapServer'
+    basicURL: '//services.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer',
+    tilePackageURL: '//tiledbasemaps.arcgis.com/arcgis/rest/services/NatGeo_World_Map/MapServer'
   },
   oceans: {
     name: 'Oceans',
-    basicURL: 'http://services.arcgisonline.com/ArcGIS/rest/services/Ocean_Basemap/MapServer',
-    tilePackageURL: 'http://tiledbasemaps.arcgis.com/arcgis/rest/services/Ocean_Basemap/MapServer'
+    basicURL: '//services.arcgisonline.com/ArcGIS/rest/services/Ocean_Basemap/MapServer',
+    tilePackageURL: '//tiledbasemaps.arcgis.com/arcgis/rest/services/Ocean_Basemap/MapServer'
   },
   satellite: {
     name: 'Satellite Imagery',
-    basicURL: 'http://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer',
-    tilePackageURL: 'http://tiledbasemaps.arcgis.com/arcgis/rest/services/World_Imagery/MapServer'
+    basicURL: '//services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer',
+    tilePackageURL: '//tiledbasemaps.arcgis.com/arcgis/rest/services/World_Imagery/MapServer'
   },
   gray: {
     name: 'Light Gray Canvas',
-    basicURL: 'http://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Light_Gray_Base/MapServer',
-    tilePackageURL: 'http://tiledbasemaps.arcgis.com/arcgis/rest/services/Canvas/World_Light_Gray_Base/MapServer'
+    basicURL: '//services.arcgisonline.com/arcgis/rest/services/Canvas/World_Light_Gray_Base/MapServer',
+    tilePackageURL: '//tiledbasemaps.arcgis.com/arcgis/rest/services/Canvas/World_Light_Gray_Base/MapServer'
   },
   'dark-gray': {
     name: 'Dark Gray Canvas',
-    basicURL: 'http://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Base/MapServer',
-    tilePackageURL: 'http://tiledbasemaps.arcgis.com/arcgis/rest/services/Canvas/World_Dark_Gray_Base/MapServer'
+    basicURL: '//services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Base/MapServer',
+    tilePackageURL: '//tiledbasemaps.arcgis.com/arcgis/rest/services/Canvas/World_Dark_Gray_Base/MapServer'
   }
 };
 

@@ -62,7 +62,6 @@ function requestTPK(basemap, targetGeom, zoomLevels) {
         f: 'json'
       })
         .done(function (tpkFilesInfo) {
-          tpkFilesInfo = JSON.parse(tpkFilesInfo);
           def.resolve(tpkFilesInfo.files[0].url);
         })
         .fail(function (err) {
